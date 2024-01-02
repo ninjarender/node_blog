@@ -1,7 +1,9 @@
 import { Router } from "express"
-// @ts-ignore
-export const router = new Router()
+export const router = new(Router as any)()
 
-import { create } from '../controllers/users'
+import { create, login, show } from '../controllers/users'
+import { verifyToken } from "../middleware/authMiddleware"
 
-router.post('/v1/users', create)
+router.post('/v1/registration', create)
+router.post('/v1/login', login)
+router.get('/v1/users', verifyToken, show)
