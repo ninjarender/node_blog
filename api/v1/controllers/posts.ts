@@ -30,9 +30,14 @@ export async function show(req: Request, res: Response) {
       },
       include: {
         comments: {
-          select: {
-            id: true,
-            comment: true
+          include: {
+            author: {
+              select: {
+                id: true,
+                email: true,
+                name: true
+              }
+            }
           }
         }
       }
