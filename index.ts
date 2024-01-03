@@ -1,6 +1,8 @@
 import dotenv from 'dotenv'
 import express from 'express'
 import cors from 'cors'
+import swaggerUi from 'swagger-ui-express'
+const swaggerFile = require('./swagger-output.json')
 
 import { router as userRouter } from './api/v1/routes/users'
 import { router as userPostsRouter } from './api/v1/routes/userPosts'
@@ -19,6 +21,8 @@ app.use('/api', userRouter)
 app.use('/api', userPostsRouter)
 app.use('/api', postsRouter)
 app.use('/api', commentsRouter)
+
+app.use('/doc', swaggerUi.serve, swaggerUi.setup(swaggerFile))
 
 app.listen(PORT, () => {
   console.log(`Server started on port ${PORT}`)
