@@ -4,6 +4,7 @@ import cors from 'cors'
 
 import { router as userRouter } from './api/v1/routes/users'
 import { router as userPostsRouter } from './api/v1/routes/userPosts'
+import { router as postRouter } from './api/v1/routes/posts'
 
 dotenv.config()
 const PORT = process.env.PORT
@@ -15,6 +16,7 @@ app.use(express.json())
 
 app.use('/api', userRouter)
 app.use('/api', userPostsRouter)
+app.use('/api', postRouter)
 
 app.listen(PORT, () => {
   console.log(`Server started on port ${PORT}`)
