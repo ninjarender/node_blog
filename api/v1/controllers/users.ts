@@ -1,15 +1,17 @@
 import { PrismaClient } from ".prisma/client"
-const prisma = new PrismaClient({ errorFormat: 'pretty' })
+const prisma = new PrismaClient()
 
 import { Request, Response } from 'express'
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
-import { verifiedRequest } from "../middleware/verifiedRequest"
+import { verifiedRequest } from "../middleware/authMiddleware"
 
 export async function create(req: Request, res: Response) {
   const { email, password, passwordConfirmation, name } = req.body
 
   if (password !== passwordConfirmation) return res.status(422).json({ message: 'Password doesn\'t match' })
+  const EMAIL_REGEX = /^[\w-\.+]+@([\w-]+\.)+[\w-]{2,4}$/g
+  if (!email.match(EMAIL_REGEX)) return res.status(422).json({ message: 'Invalid email' })
 
   const encryptedPassword = await bcrypt.hash(password, 8)
   jwt.sign({ encryptedPassword: encryptedPassword }, process.env.JWT_SECRET as string, { expiresIn: '1d' }, async (err, token) => {
@@ -24,12 +26,9 @@ export async function create(req: Request, res: Response) {
         })
 
         res.status(201).json({ token: token })
-      } catch (err) {
+      } catch (err: any) {
         console.log(err)
-        // @ts-ignore
         res.status(422).json({ message: err.message })
-      } finally {
-        await prisma.$disconnect()
       }
     } else if (err) {
       res.status(500).json({ message: 'Something went wrong' })
@@ -64,8 +63,5 @@ export async function login(req: Request, res: Response) {
 }
 
 export async function show(req: verifiedRequest, res: Response) {
-  const user = await prisma.user.findUnique({ where: { encryptedPassword: req.encryptedPassword } })
-  // @ts-ignore
-  const { encryptedPassword, ...rest } = user
-  res.json({ user: rest })
+  res.json({ user: req.user })
 }
