@@ -16,7 +16,7 @@ interface JwtPayload extends jwt.JwtPayload {
 }
 
 export async function verifyToken(req: verifiedRequest, res: Response, next: NextFunction) {
-  const token = req.header('Authorization')?.replace('Bearer ', '')
+  const token: string | undefined = req.header('Authorization')?.replace('Bearer ', '')
   if (!token) return res.status(401).json({ message: 'Access denied' })
 
   try {

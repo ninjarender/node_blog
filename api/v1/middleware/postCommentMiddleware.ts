@@ -13,7 +13,7 @@ export async function postCommentMiddleware(req: postRequest, res: Response, nex
 
   if (!post) return res.status(404).json({ message: 'Post not found' })
 
-  const authorMatch: boolean = post.authorId === req.user.id
+  const authorMatch = post.authorId === req.user.id
   if (authorMatch) return res.status(403).json({ message: 'Access denied' })
 
   req.post = post

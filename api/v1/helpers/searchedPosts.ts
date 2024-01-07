@@ -8,7 +8,7 @@ export async function searchedPosts(
   query: string,
   page: number,
   limit: number
-) {
+): Promise<{ posts: { body: string }[], count: number }> {
   return await prisma.$transaction([
     prisma.post.count(searchQuery(authorId, (query ?? '').toString())),
     prisma.post.findMany({
@@ -21,7 +21,16 @@ export async function searchedPosts(
   })
 }
 
-function searchQuery(authorId: string | undefined, query: string) {
+function searchQuery(authorId: string | undefined, query: string): {
+  where: {
+    authorId: string | undefined,
+    OR: {
+      [key: string]: {
+        contains: string
+      }
+    }[]
+  }
+} {
   return {
     where: {
       authorId: authorId,
@@ -36,13 +45,20 @@ function searchQuery(authorId: string | undefined, query: string) {
   }
 }
 
-function pagination(limit: number, page: number) {
+function pagination(limit: number, page: number): {
+  take: number,
+  skip: number
+} {
   const offset = (page - 1) * limit
 
   return { take: limit, skip: offset }
 }
 
-function orderBy(sort: string, order: string) {
+function orderBy(sort: string, order: string): {
+  orderBy: {
+    [key: string]: string
+  }
+} {
   sort = ['createdAt', 'title'].includes(sort) ? sort : 'createdAt'
   order = ['asc', 'desc'].includes(order) ? order : 'asc'
 
@@ -53,8 +69,10 @@ function orderBy(sort: string, order: string) {
   }
 }
 
-function truncatedPosts(posts: any) {
-  return posts.map((post: {body: string}) => {
+function truncatedPosts(posts: { body: string }[]): {
+  body: string
+}[] {
+  return posts.map((post: { body: string }) => {
     const { body, ...rest } = post
 
     return { ...rest, body: `${body.slice(0, 5)}...` }
